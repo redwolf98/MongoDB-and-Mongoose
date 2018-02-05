@@ -21,10 +21,12 @@ app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
 mongoose.Promise = Promise;
-//mongoose.connect("mongodb://redwolf98:dadelus06@ds111648.mlab.com:11648/uncc_mongodb_homework")
-mongoose.connect("mongodb://@localhost:27017/uncc_mongodb_homework", {
+mongoose.connect("mongodb://redwolf98:dadelus06@ds111648.mlab.com:11648/uncc_mongodb_homework", {
   useMongoClient: true
 });
+// mongoose.connect("mongodb://@localhost:27017/uncc_mongodb_homework", {
+//   useMongoClient: true
+// });
 
 //Uncomment BELOW when ready to connect to Mongo
 

@@ -1,34 +1,104 @@
 var buildArticleCard = (article) =>{
     console.log("IN buildArticleCard");
-    var card = 
-     $("<div>").addClass("card savedArticleCard")
-        .append
-        (
-            $("<div>").addClass("card-header").append(
-                $("<a>").attr("href",article.link).attr("target","_blank").append(
-                    $("<h2>").text(article.title)
+    var card = $("<div>").addClass("row")
+    .append( $("<div>").addClass("col-9")
+        .append(
+        $("<div>").addClass("card savedArticleCard")
+            .append
+            (
+                $("<div>").addClass("card-header").append(
+                    $("<a>").attr("href",article.link).attr("target","_blank").append(
+                        $("<h2>").text(article.title)
+                    )
+                )
+            )
+            .append
+            (
+                $("<div>").addClass("card-block").append(
+                    $("<p>").text(article.description)
                 )
             )
         )
-        .append
-        (
-            $("<div>").addClass("card-block").append(
-                $("<p>").text(article.description)
-            )
-        )
-        .append
-        (
-            $("<button>").addClass("btn btn-primary").attr("id","btnArticleNotes").attr("data-id",article._id).text("Article Notes")
-            .click(function()
-            {
+    )
+            .append($("<div>").addClass("col-3")
+                .append
+                (
+                    $("<button>").addClass("btn btn-primary").attr("id","btnArticleNotes").attr("data-id",article._id).text("Article Notes")
+                    .click(function()
+                    {
+                        $.ajax("/getarticle/" + $(this).attr("data-id"),{
+                            type:"GET"
+                        })
+                        .done(function(article){
+                            
+                                $("#noteBlock").empty();
+                                $("#noteModal").attr("articleID",article._id);
+                                $("#noteModalHeader").text("Notes for Article: " + article._id);
 
-            })
-        )
-        .append(
-            $("<button>").addClass("btn btn-danger").attr("id","btnDeleteArticle").attr("data-id",article._id).text("Delete From Saved")
-        );
+                                for(var i=0; i < article.notes.length;i++){
+                                    $("#noteBlock").append(buildNoteCard(article.notes[i],article._id));
+                                }
+
+                        })
+                     
+                     
+                        $("#noteModal").modal();
+                    })
+                )
+                .append(
+                    $("<button>").addClass("btn btn-danger").attr("id","btnDeleteArticle").attr("data-id",article._id).text("Delete From Saved")
+                    .click(function(){
+                        console.log("Clicked Delete Article");
+                        $.ajax("deleteArticle/" + $(this).attr("data-id"),{
+                            type:"DELETE"
+                        })
+                        .done(function(){
+                            console.log("Article Deletion Completed");
+                        })
+                        
+                        $(this).parent().parent().remove();
+                    })
+                )
+            
+    );
         return card;
 }
+
+
+var buildNoteCard = (note, articleID) =>{
+    console.log("In build Note");
+    console.log("   note: " + note);
+    console.log("   ID: " + articleID);
+
+    var noteCard = $("<div>").addClass("card noteCard")
+    .append($("<div>").addClass("card-block").append($("<p>").text(note))
+    )
+    .append($("<button>").addClass("btn btn-danger").text("X")
+        .click(function(){
+            $.ajax({
+                url:"/deleteNote",
+                method:"DELETE",
+                data:{
+                    note:$(this).parent().children(".card-block").children("p").text(),
+                    articleID: articleID
+                    }
+            })
+            .done(function(){
+
+
+
+            });
+            $(this).parent().remove();
+        })
+     )
+    
+     return noteCard;
+
+}
+
+
+
+
 
 $(function(){
 
@@ -50,15 +120,6 @@ $(function(){
                     
                     $("#articleBlock").append(buildArticleCard(articles[i]));
                     
-                    //                     <div class="card">
-                    //     <div class="card-header">
-                    //         <a href={{link}}><h2>{{title}}</h2></a>
-                    //     </div>
-                    //     <div class="card-block">
-                    //     </div>
-                    //     <button class="btn btn-primary" id="btnArticleNotes" data-id={{_id}}>Article Notes</button>
-                    //     <button class="btn btn-danger" id="btnDeleteArticle" data-id={{_id}}>Delete From Saved</button>
-                    // </div>
                 }
                 
             }
@@ -156,11 +217,22 @@ $(function(){
         });
     });
 
-    // $(".btnSaveArticle").on("click", function(){
-     
+$("#btnSaveNote").on("click",function(){
+    if($("#noteInput").html().length > 0){
 
-        
-    // });
+        console.log("Button - btnSaveNote");
+        console.log("ArticleID: " +$("#noteModal").attr("articleID") );
+        console.log("Note: " +$("#noteInput").val());
 
-
+        $.ajax("/addNote",{
+            method:"POST",
+            data:{articleID:$("#noteModal").attr("articleID"),
+                  note: $("#noteInput").val()}
+        }).done(function(){})
+        $("#noteBlock").append(buildNoteCard($("#noteInput").val(),$("#noteModal").attr("articleID")))
+        $("#noteInput").val('');
+    }else{
+        alert("Please enter something to be saved as a note.");
+    }
+})
 });

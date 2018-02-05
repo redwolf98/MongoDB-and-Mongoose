@@ -3,11 +3,12 @@ var express = require("express");
 var axios = require("axios");
 var cheerio = require("cheerio");
 var router = express.Router();
-const DEBUG = false;
+const DEBUG = true;
 var Article = require("../models/Article");
 
 const log = (outputString) =>{
-    if(DEBUG) log(outputString);
+    if(DEBUG) console.log(outputString);
+    
 }
 
 router.get("/",function(req,res){
@@ -87,10 +88,62 @@ router.get("/getArticles", function(req, res) {
 });
 
 
-router.post("/article", function(req,res){
+router.post("/article", function(req,res)
+{
     Article.create(req.body)
     .then(function(){
         res.status(200).send("Article Created");
+    })
+});
+
+router.delete("/deleteArticle/:id",function(req,res)
+{
+    console.log("In Delete Article");
+    Article.deleteOne({_id:req.params.id})
+    .then(function(){
+        console.log("Article Deleted");
+        res.status(200).send("Article Deleted")
+    })
+    .catch(function(err){res.json(err)})
+});
+
+router.post("/addNote",function(req,res){
+
+    console.log("PATH: /addNote");
+    console.log("       articleID: " + req.body.articleID);
+    console.log("       note: " + req.body.note);
+
+    Article.update({_id: req.body.articleID},{$push:{notes: req.body.note}})
+    .then(function(){ 
+        console.log("Note added to Aricle.");
+        res.status(200).send("Note Added to Article");
+    })
+    .catch(function(err){res.json(err)})
+});
+
+router.delete("/deleteNote",function(req,res){
+
+    console.log("PATH: deleteNote");
+    console.log("   ArticleID: " + req.body.articleID);
+    console.log("   Note: " + req.body.note);
+
+    Article
+    .update({_id: req.body.articleID},{$pull:{notes: req.body.note}})
+    .then(function(){
+        console.log("Note removed from Arictle.");
+        res.status(200).send("Note removed from Article");
+    })
+    .catch(function(err){res.json(err)})
+});
+
+router.get("/getArticle/:id",function(req,res){
+    console.log("In Get Article");
+    Article.findOne({_id:req.params.id})
+    .then(function(article){
+        res.status(200).send(article);
+    })
+    .catch(function(err){
+        res.status(404).json(err);
     })
 });
 
