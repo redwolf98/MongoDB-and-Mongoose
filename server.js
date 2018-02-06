@@ -7,7 +7,7 @@ var mongoose = require("mongoose");
 
 
 var app = express();
-var port = 3000;
+var port = process.env.PORT || 3000;
 
 
 app.use(express.static("public"));
@@ -24,7 +24,7 @@ mongoose.Promise = Promise;
 // mongodb://<dbuser>:<dbpassword>@ds225078.mlab.com:25078/heroku_nb0k727f/uncc_mongodb_homework
 // mongodb://<dbuser>:<dbpassword>@ds111648.mlab.com:11648/uncc_mongodb_homework
 if(process.env.MONGODB_URI){
-  mongoose.connect(process.env.MONGODB_URI + "/uncc_mongodb_homework", {
+  mongoose.connect(process.env.MONGODB_URI, {
   useMongoClient: true
   });
 }else{
@@ -56,6 +56,6 @@ var routes = require("./controllers/articleController.js");
 
 app.use(routes);
 
-app.listen(3000, function() {
-  console.log("App running on port 3000!");
+app.listen(port, function() {
+  console.log("App running on port" + port + "!");
 });
